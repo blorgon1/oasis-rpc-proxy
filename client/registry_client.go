@@ -2,10 +2,11 @@ package client
 
 import (
 	"context"
+
+	"github.com/figment-networks/indexing-engine/metrics"
 	"github.com/oasisprotocol/oasis-core/go/common/node"
 	"github.com/oasisprotocol/oasis-core/go/registry/api"
 	"google.golang.org/grpc"
-	"time"
 )
 
 var (
@@ -27,8 +28,6 @@ type registryClient struct {
 }
 
 func (c *registryClient) GeNodeById(ctx context.Context, key string, height int64) (*node.Node, error) {
-	defer logRequestDuration(time.Now(), "RegistryClient_GeNodeById")
-
 	pKey, err := getPublicKey(key)
 	if err != nil {
 		return nil, err
@@ -37,5 +36,8 @@ func (c *registryClient) GeNodeById(ctx context.Context, key string, height int6
 		Height: height,
 		ID:     *pKey,
 	}
+
+	t := metrics.NewTimer(clientRequestDuration.WithLabels([]string{"RegistryClient_GeNodeById"}))
+	defer t.ObserveDuration()
 	return c.client.GetNode(ctx, q)
 }

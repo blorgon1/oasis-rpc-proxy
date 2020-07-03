@@ -2,10 +2,11 @@ package client
 
 import (
 	"context"
+
+	"github.com/figment-networks/indexing-engine/metrics"
 	"github.com/oasisprotocol/oasis-core/go/consensus/api"
 	genesisApi "github.com/oasisprotocol/oasis-core/go/genesis/api"
 	"google.golang.org/grpc"
-	"time"
 )
 
 var (
@@ -29,19 +30,19 @@ type consensusClient struct {
 }
 
 func (c *consensusClient) GetBlockByHeight(ctx context.Context, h int64) (*api.Block, error) {
-	defer logRequestDuration(time.Now(), "ConsensusClient_GetBlockByHeight")
-
+	t := metrics.NewTimer(clientRequestDuration.WithLabels([]string{"ConsensusClient_GetBlockByHeight"}))
+	defer t.ObserveDuration()
 	return c.client.GetBlock(ctx, h)
 }
 
 func (c *consensusClient) GetStateByHeight(ctx context.Context, h int64) (*genesisApi.Document, error) {
-	defer logRequestDuration(time.Now(), "ConsensusClient_GetStateByHeight")
-
+	t := metrics.NewTimer(clientRequestDuration.WithLabels([]string{"ConsensusClient_GetStateByHeight"}))
+	defer t.ObserveDuration()
 	return c.client.StateToGenesis(ctx, h)
 }
 
 func (c *consensusClient) GetTransactionsByHeight(ctx context.Context, h int64) ([][]byte, error) {
-	defer logRequestDuration(time.Now(), "ConsensusClient_GetTransactionsByHeight")
-
+	t := metrics.NewTimer(clientRequestDuration.WithLabels([]string{"ConsensusClient_GetTransactionsByHeight"}))
+	defer t.ObserveDuration()
 	return c.client.GetTransactions(ctx, h)
 }

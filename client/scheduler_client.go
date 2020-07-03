@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+
+	"github.com/figment-networks/indexing-engine/metrics"
 	"github.com/oasisprotocol/oasis-core/go/scheduler/api"
 	"google.golang.org/grpc"
-	"time"
 )
 
 var (
@@ -17,16 +18,16 @@ type SchedulerClient interface {
 
 func NewSchedulerClient(conn *grpc.ClientConn) SchedulerClient {
 	return &schedulerClient{
-		client:   api.NewSchedulerClient(conn),
+		client: api.NewSchedulerClient(conn),
 	}
 }
 
 type schedulerClient struct {
-	client   api.Backend
+	client api.Backend
 }
 
 func (r *schedulerClient) GetValidatorsByHeight(ctx context.Context, h int64) ([]*api.Validator, error) {
-	defer logRequestDuration(time.Now(), "SchedulerClient_GetValidatorsByHeight")
-
+	t := metrics.NewTimer(clientRequestDuration.WithLabels([]string{"SchedulerClient_GetValidatorsByHeight"}))
+	defer t.ObserveDuration()
 	return r.client.GetValidators(ctx, h)
 }

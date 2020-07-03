@@ -2,6 +2,8 @@ package server
 
 import (
 	"fmt"
+	"net"
+
 	"github.com/figment-networks/oasis-rpc-proxy/client"
 	"github.com/figment-networks/oasis-rpc-proxy/config"
 	"github.com/figment-networks/oasis-rpc-proxy/grpc/account/accountpb"
@@ -12,12 +14,10 @@ import (
 	"github.com/figment-networks/oasis-rpc-proxy/grpc/state/statepb"
 	"github.com/figment-networks/oasis-rpc-proxy/grpc/transaction/transactionpb"
 	"github.com/figment-networks/oasis-rpc-proxy/grpc/validator/validatorpb"
-	"github.com/figment-networks/oasis-rpc-proxy/metric"
 	"github.com/figment-networks/oasis-rpc-proxy/utils/logger"
 	"github.com/oasisprotocol/oasis-core/go/genesis/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"net"
 )
 
 type Server struct {
@@ -59,15 +59,11 @@ func (s *Server) init() *Server {
 func (s *Server) Start(serverAddress string, serverPort int64) error {
 	logger.Info(fmt.Sprintf("starting grpc accountServer %s:%d...", serverAddress, serverPort), logger.Field("app", "server"))
 
-	go s.startMetricsServer()
+	//go s.startMetricsServer()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", serverAddress, serverPort))
 	if err != nil {
 		return err
 	}
 	return s.server.Serve(lis)
-}
-
-func (s *Server) startMetricsServer() error {
-	return metric.NewClientMetric().StartServer(s.cfg.ServerMetricAddr, s.cfg.MetricServerUrl)
 }

@@ -2,14 +2,23 @@ package client
 
 import (
 	"fmt"
-	"github.com/figment-networks/oasis-rpc-proxy/metric"
+
+	"github.com/figment-networks/indexing-engine/metrics"
 	"github.com/figment-networks/oasis-rpc-proxy/utils/logger"
 	"github.com/oasisprotocol/oasis-core/go/common/crypto/signature"
 	oasisGrpc "github.com/oasisprotocol/oasis-core/go/common/grpc"
 	"github.com/oasisprotocol/oasis-core/go/staking/api"
+
 	"google.golang.org/grpc"
-	"time"
 )
+
+var clientRequestDuration = metrics.MustNewHistogramWithTags(metrics.HistogramOptions{
+	Namespace: "indexers",
+	Subsystem: "oasis_proxy",
+	Name:      "node_request_duration",
+	Desc:      "The total time required to execute request to node",
+	Tags:      []string{"request"},
+})
 
 func New(target string) (*Client, error) {
 	logger.Debug(fmt.Sprintf("grpc server target is %s", target))
@@ -69,9 +78,4 @@ func getAddressFromPublicKey(key string) (*api.Address, error) {
 	}
 	address := api.NewAddress(pk)
 	return &address, nil
-}
-
-func logRequestDuration(start time.Time, requestName string) {
-	elapsed := time.Since(start)
-	metric.ClientRequestDuration.WithLabelValues(requestName).Set(elapsed.Seconds())
 }

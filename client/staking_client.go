@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+
+	"github.com/figment-networks/indexing-engine/metrics"
 	"github.com/oasisprotocol/oasis-core/go/staking/api"
 	"google.golang.org/grpc"
-	"time"
 )
 
 var (
@@ -29,38 +30,41 @@ type stakingClient struct {
 }
 
 func (c *stakingClient) GetAccountByAddress(ctx context.Context, key string, height int64) (*api.Account, error) {
-	defer logRequestDuration(time.Now(), "StakingClient_GetAccountByPublicKey")
-
 	q, err := c.buildOwnerQuery(key, height)
 	if err != nil {
 		return nil, err
 	}
+
+	t := metrics.NewTimer(clientRequestDuration.WithLabels([]string{"StakingClient_GetAccountByAddress"}))
+	defer t.ObserveDuration()
 	return c.client.Account(ctx, q)
 }
 
 func (c *stakingClient) GetDelegations(ctx context.Context, key string, height int64) (map[api.Address]*api.Delegation, error) {
-	defer logRequestDuration(time.Now(), "StakingClient_GetDelegations")
-
 	q, err := c.buildOwnerQuery(key, height)
 	if err != nil {
 		return nil, err
 	}
+
+	t := metrics.NewTimer(clientRequestDuration.WithLabels([]string{"StakingClient_GetDelegations"}))
+	defer t.ObserveDuration()
 	return c.client.Delegations(ctx, q)
 }
 
 func (c *stakingClient) GetDebondingDelegations(ctx context.Context, key string, height int64) (map[api.Address][]*api.DebondingDelegation, error) {
-	defer logRequestDuration(time.Now(), "StakingClient_GetDebondingDelegations")
-
 	q, err := c.buildOwnerQuery(key, height)
 	if err != nil {
 		return nil, err
 	}
+
+	t := metrics.NewTimer(clientRequestDuration.WithLabels([]string{"StakingClient_GetDebondingDelegations"}))
+	defer t.ObserveDuration()
 	return c.client.DebondingDelegations(ctx, q)
 }
 
 func (c *stakingClient) GetState(ctx context.Context, height int64) (*api.Genesis, error) {
-	defer logRequestDuration(time.Now(), "StakingClient_GetState")
-
+	t := metrics.NewTimer(clientRequestDuration.WithLabels([]string{"StakingClient_GetState"}))
+	defer t.ObserveDuration()
 	return c.client.StateToGenesis(ctx, height)
 }
 
