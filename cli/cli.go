@@ -10,6 +10,7 @@ import (
 	"github.com/figment-networks/oasis-rpc-proxy/utils/reporting"
 	"github.com/oasisprotocol/oasis-core/go/genesis/api"
 	genesisFile "github.com/oasisprotocol/oasis-core/go/genesis/file"
+	oasisFlags "github.com/oasisprotocol/oasis-core/go/oasis-node/cmd/common/flags"
 	"github.com/pkg/errors"
 )
 
@@ -24,6 +25,11 @@ func Run() {
 	flag.BoolVar(&showVersion, "v", false, "Show application version")
 	flag.StringVar(&configPath, "config", "", "Path to config")
 	flag.StringVar(&runCommand, "cmd", "", "Command to run")
+	flag.Var(
+		oasisFlags.DebugDontBlameOasisFlag.Lookup(oasisFlags.CfgDebugDontBlameOasis).Value,
+		oasisFlags.CfgDebugDontBlameOasis,
+		"Enable debug/unsafe/insecure Oasis options",
+	)
 	flag.Parse()
 
 	if showVersion {
